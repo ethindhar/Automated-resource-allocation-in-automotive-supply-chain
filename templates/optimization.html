@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resource Optimization</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .navbar { background-color: #1a237e; }
+        .card { margin-bottom: 20px; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); }
+        .optimization-form { background: #f8f9fa; padding: 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="#">Automated Resource Allocation</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Sales Prediction</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/optimization">Resource Optimization</a>
+                    </li>
+                   
+                    
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="mb-4">Resource Optimization</h2>
+        
+        <div class="row">
+            <!-- Resource Parameters Form (left side) -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Resource Parameters</h5>
+                        <form id="optimization-form">
+                            <div class="mb-3">
+                                <label for="resources" class="form-label">Available Resources</label>
+                                <input type="number" class="form-control" id="resources" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="capacity" class="form-label">Production Capacity</label>
+                                <input type="number" class="form-control" id="capacity" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="labor" class="form-label">Labor Hours</label>
+                                <input type="number" class="form-control" id="labor" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="budget" class="form-label">Budget Constraint</label>
+                                <input type="number" class="form-control" id="budget" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Optimize Resources</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results (right side) -->
+            <div class="col-md-6">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Current Allocation</h5>
+                        <div id="allocation-chart" style="height: 300px;"></div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Optimization Results</h5>
+                        <div class="alert alert-info">
+                            <h6>Overall Efficiency Score</h6>
+                            <p id="efficiency-score" class="h3 mb-3">-</p>
+                            
+                            <h6>Efficiency Breakdown</h6>
+                            <div class="small">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Resource Utilization:</span>
+                                    <span id="resource-util">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Labor Efficiency:</span>
+                                    <span id="labor-eff">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Budget Efficiency:</span>
+                                    <span id="budget-eff">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Production Balance:</span>
+                                    <span id="prod-balance">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-success mt-3">
+                            <h6>Cost Savings</h6>
+                            <p id="cost-savings" class="h4">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Component Status</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Component</th>
+                                        <th>Inventory</th>
+                                        <th>Demand</th>
+                                        <th>Production Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="component-status">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Supply Chain KPIs</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h6>Inventory Turnover</h6>
+                                <p id="inventory-turnover" class="h4">-</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Labor Utilization</h6>
+                                <p id="labor-utilization" class="h4">-</p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>Production Efficiency</h6>
+                                <p id="production-efficiency" class="h4">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add this card for Bottleneck Alerts -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Bottleneck Alerts</h5>
+                        <div id="bottleneck-alerts" class="alert alert-warning" style="display: none;">
+                            <ul class="mb-0">
+                                <!-- Bottlenecks will be listed here -->
+                            </ul>
+                        </div>
+                        <div id="no-bottlenecks" class="alert alert-success">
+                            No bottlenecks detected
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Demand Forecast -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Demand Forecast</h5>
+                        <div id="forecast-chart"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('optimization-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const data = {
+                resources: parseFloat(document.getElementById('resources').value) || 0,
+                capacity: parseFloat(document.getElementById('capacity').value) || 0,
+                labor: parseFloat(document.getElementById('labor').value) || 0,
+                budget: parseFloat(document.getElementById('budget').value) || 0
+            };
+
+            fetch('/optimize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.status === 'success') {
+                    // Update allocation chart
+                    const chartData = [{
+                        type: 'bar',
+                        x: ['Production', 'Storage', 'Distribution', 'Labor'],
+                        y: [
+                            result.data.allocation.Production,
+                            result.data.allocation.Storage,
+                            result.data.allocation.Distribution,
+                            result.data.allocation.Labor
+                        ],
+                        marker: {
+                            color: ['#1976D2', '#2196F3', '#64B5F6', '#90CAF9']
+                        }
+                    }];
+                    
+                    Plotly.newPlot('allocation-chart', chartData, {
+                        title: 'Resource Allocation',
+                        yaxis: {
+                            title: 'Allocation %',
+                            range: [0, 100]
+                        },
+                        margin: { t: 30 }
+                    });
+
+                    // Update efficiency score and breakdown
+                    document.getElementById('efficiency-score').textContent = 
+                        `${result.data.efficiency_score}%`;
+                    
+                    document.getElementById('resource-util').textContent = 
+                        `${result.data.efficiency_breakdown.resource_utilization}%`;
+                    document.getElementById('labor-eff').textContent = 
+                        `${result.data.efficiency_breakdown.labor_efficiency}%`;
+                    document.getElementById('budget-eff').textContent = 
+                        `${result.data.efficiency_breakdown.budget_efficiency}%`;
+                    document.getElementById('prod-balance').textContent = 
+                        `${result.data.efficiency_breakdown.production_balance}%`;
+
+                    // Update cost savings
+                    document.getElementById('cost-savings').textContent = 
+                        `$${result.data.cost_savings.toLocaleString()}`;
+
+                    // Update component status
+                    document.getElementById('component-status').innerHTML = 
+                        Object.entries(result.data.component_status)
+                            .map(([component, data]) => `
+                                <tr>
+                                    <td>${component}</td>
+                                    <td>${data.inventory}</td>
+                                    <td>${data.demand}</td>
+                                    <td>${data.production_rate}/day</td>
+                                </tr>
+                            `).join('');
+
+                    // Update KPIs
+                    document.getElementById('inventory-turnover').textContent = 
+                        result.data.kpis.inventory_turnover.toFixed(2);
+                    document.getElementById('labor-utilization').textContent = 
+                        `${result.data.kpis.labor_utilization}%`;
+                    document.getElementById('production-efficiency').textContent = 
+                        `${result.data.kpis.production_efficiency}%`;
+
+                    // Update bottleneck alerts
+                    const bottleneckDiv = document.getElementById('bottleneck-alerts');
+                    const noBottlenecksDiv = document.getElementById('no-bottlenecks');
+                    
+                    if (result.data.bottlenecks && result.data.bottlenecks.length > 0) {
+                        bottleneckDiv.style.display = 'block';
+                        noBottlenecksDiv.style.display = 'none';
+                        
+                        bottleneckDiv.innerHTML = `
+                            <ul class="mb-0">
+                                ${result.data.bottlenecks.map(alert => `
+                                    <li>${alert}</li>
+                                `).join('')}
+                            </ul>
+                        `;
+                    } else {
+                        bottleneckDiv.style.display = 'none';
+                        noBottlenecksDiv.style.display = 'block';
+                    }
+
+                    // Update Forecast Chart
+                    const forecastData = [{
+                        type: 'bar',
+                        x: Object.keys(result.data.forecast),
+                        y: Object.values(result.data.forecast),
+                        marker: {
+                            color: '#2196F3'
+                        }
+                    }];
+                    
+                    Plotly.newPlot('forecast-chart', forecastData, {
+                        title: 'Component Demand Forecast',
+                        yaxis: { title: 'Predicted Demand' }
+                    });
+                } else {
+                    showError(result.message);
+                }
+            })
+            .catch(error => {
+                showError('Failed to optimize resources: ' + error.message);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial empty charts
+            const initialData = [{
+                type: 'bar',
+                x: ['Production', 'Storage', 'Distribution', 'Labor'],
+                y: [0, 0, 0, 0],
+                marker: {
+                    color: ['#1976D2', '#2196F3', '#64B5F6', '#90CAF9']
+                }
+            }];
+
+            Plotly.newPlot('allocation-chart', initialData, {
+                title: 'Resource Allocation',
+                yaxis: {
+                    title: 'Allocation %',
+                    range: [0, 100]
+                },
+                margin: { t: 30 }
+            });
+
+            const initialForecastData = [{
+                type: 'bar',
+                x: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                y: [0, 0, 0, 0],
+                marker: {
+                    color: '#2196F3'
+                }
+            }];
+
+            Plotly.newPlot('forecast-chart', initialForecastData, {
+                title: 'Component Demand Forecast',
+                yaxis: { title: 'Predicted Demand' }
+            });
+        });
+
+        function showError(message) {
+            alert('Error: ' + message);
+            console.error('Error:', message);
+        }
+    </script>
+</body>
+</html> 
